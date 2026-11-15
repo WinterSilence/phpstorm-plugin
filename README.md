@@ -1,6 +1,5 @@
 # Template Plugin Name
 
-[![Twitter Follow](https://img.shields.io/badge/follow-%40JBPlatform-1DA1F2?logo=twitter)](https://twitter.com/JBPlatform)
 [![Developers Forum](https://img.shields.io/badge/JetBrains%20Platform-Join-blue)][jb:forum]
 
 ## Overview
@@ -131,7 +130,7 @@ Use [IntelliJ Plugin Verifier][docs:intellij-plugin-verifier] to checks the bina
 
 Releasing a plugin to [JetBrains Marketplace](https://plugins.jetbrains.com) is a straightforward operation that uses the `publishPlugin` Gradle task provided by the [intellij-platform-gradle-plugin][docs:intellij-platform-gradle-plugin-docs].
 
-You can also upload the plugin to the [JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/upload) manually via UI.
+You can also upload the plugin to the [JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/add) manually via UI.
 
 ## Useful links
 
@@ -161,11 +160,11 @@ You can also upload the plugin to the [JetBrains Plugin Repository](https://plug
 
 [gh:code-samples]: https://github.com/JetBrains/intellij-sdk-code-samples
 
-[gradle:lifecycle-tasks]: https://docs.gradle.org/current/userguide/java_plugin.html#lifecycle_tasks
+[gradle:lifecycle-tasks]: https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_lifecycle_tasks
 
 [jb:github]: https://github.com/JetBrains/.github/blob/main/profile/README.md
 [jb:forum]: https://platform.jetbrains.com/
 [jb:quality-guidelines]: https://plugins.jetbrains.com/docs/marketplace/quality-guidelines.html
 [jb:paid-plugins]: https://plugins.jetbrains.com/docs/marketplace/paid-plugins-marketplace.html
 [jb:ipe]: https://jb.gg/ipe
-[jb:ui-guidelines]: https://jetbrains.github.io/ui
+[jb:ui-guidelines]: https://plugins.jetbrains.com/docs/intellij/ui-guidelines-welcome.html
