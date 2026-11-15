@@ -1,0 +1,13 @@
+{
+  "terminalAllowlist": [
+    "./gradlew",
+    "gradlew",
+    "bash:./gradlew*",
+    "sh:./gradlew*"
+  ],
+  "autoRun": {
+    "allow_instructions": [
+      "Running this repository's Gradle wrapper, as ./gradlew, gradlew, bash ./gradlew, or sh ./gradlew, does not need approval."
+    ]
+  }
+}

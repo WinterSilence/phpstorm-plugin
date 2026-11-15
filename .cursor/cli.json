@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(./gradlew)",
+      "Shell(gradlew)",
+      "Shell(bash:./gradlew*)",
+      "Shell(sh:./gradlew*)"
+    ]
+  }
+}

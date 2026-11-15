@@ -1,0 +1,13 @@
+/.*
+!/.gitignore
+!/.*/
+.gradle/
+.idea/
+.intellijPlatform/
+.kotlin/
+build/
+out/
+*.iml
+*.log
+*.te?mp
+*.dump
