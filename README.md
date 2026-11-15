@@ -5,7 +5,7 @@
 
 ## Overview
 
-This repository is a demo plugin for PhpStorm IDE.
+This repository is a template of demo plugin for PhpStorm IDE.
 
 ## Demo Functionality
 
