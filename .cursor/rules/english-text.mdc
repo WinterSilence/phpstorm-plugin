@@ -1,0 +1,23 @@
+---
+description: New repository text is English unless a language is specified or implied
+alwaysApply: true
+---
+
+# English text
+
+Write new repository text in English. This includes documentation, comments, UI and inspection strings, commit messages, and identifiers that are words.
+
+Use another language only when:
+
+- the request names that language for the text, or
+- the surrounding file or task already uses it (a localized bundle, a fixture that must match non-English source, a translation of an existing string).
+
+Chat replies stay in the user's language. Labels such as «Было» and «Стало» in chat stay as they are.
+
+```text
+// Bad: a new comment in a language the file does not use
+// Проверяет, что проект не disposed
+
+// Good
+// Checks that the project is not disposed
+```

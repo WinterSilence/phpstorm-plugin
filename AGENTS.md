@@ -9,3 +9,4 @@ Read one article:
 - EDT, actions, UI, strings: [docs/runtime.md](docs/runtime.md)
 - PHP types, suppressors, Structure: [docs/php.md](docs/php.md)
 - Local inspections: [docs/inspections.md](docs/inspections.md)
+- Stable platform and PHP types: [docs/platform-api.md](docs/platform-api.md), then the package page it links for the types you call

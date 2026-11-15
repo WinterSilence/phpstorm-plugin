@@ -1,0 +1,24 @@
+---
+description: Prefer existing public stable org.jetbrains and com.intellij API over new helpers
+alwaysApply: true
+---
+
+# Reuse platform API
+
+Before adding a class, function, constant, or similar helper, look for a public stable element in `org.jetbrains` or `com.intellij` that already does the job, and call that.
+
+Add a plugin type only when nothing there fits, or the platform requires one: an action, inspection, service, type provider, or suppressor.
+
+Skip API marked `@Deprecated`, `@ApiStatus.Internal`, `@ApiStatus.Experimental`, `@ApiStatus.ScheduledForRemoval`, or `@ApiStatus.Obsolete`. Confirm the signature in the [IntelliJ Platform Explorer](https://jb.gg/ipe). The catalog is [docs/platform-api.md](../../docs/platform-api.md); open the package page for the call.
+
+```kotlin
+// Bad: a new helper that walks to the file
+fun enclosingFile(element: PsiElement): PsiFile? {
+    var current: PsiElement? = element
+    while (current != null && current !is PsiFile) current = current.parent
+    return current as? PsiFile
+}
+
+// Good
+PsiTreeUtil.getParentOfType(element, PsiFile::class.java)
+```

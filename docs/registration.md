@@ -25,6 +25,12 @@ object ExampleIcons {
 
 `icon="com.example.ExampleIcons.ACTION"`.
 
+Browse the [icon list](https://intellij-icons.jetbrains.design/) and use `AllIcons` before adding a file. The tool window already does this: `icon="AllIcons.Toolwindows.ToolWindowPalette"`. Guide: [Working with Icons](https://plugins.jetbrains.com/docs/intellij/icons.html).
+
+A custom icon is an SVG in resources. `IconLoader.getIcon` takes a path that starts with `/`. In XML, use that path (`icon="/icons/example.svg"`) or the holder above. A class in the top-level `icons` package is referenced as `MyIcons.ACTION`. Any other package needs the full name, as in the example.
+
+Sizes: action, node, and file type 16×16; tool window 13×13, and for the New UI 20×20 plus 16×16; gutter 12×12, and for the New UI 14×14. Set the SVG `width` and `height`. The default is 16×16. A dark variant is `name_dark.svg`. Add `@2x` only when the icon does not scale cleanly: `name@2x.svg` and `name@2x_dark.svg`.
+
 ## Extensions
 
 Look up a point in [Plugin Extension Points](https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html) or the [IntelliJ Platform Explorer](https://jb.gg/ipe). Platform points use `com.intellij`. PHP points such as `typeProvider4` use `com.jetbrains.php`. A wrong namespace is ignored.

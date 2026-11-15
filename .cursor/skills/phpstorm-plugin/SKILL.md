@@ -11,3 +11,4 @@ description: >-
 1. Read [AGENTS.md](../../../AGENTS.md).
 2. Read only the article it names for this task.
 3. Implement that article. Do not restate it.
+4. Before adding a class, function, or constant, use a public stable one in `org.jetbrains`, `com.intellij`, or `com.jetbrains.php` (`PhpIndex`, `PhpClassHierarchyUtils`). Add a plugin type only when the platform requires it or nothing there fits.
