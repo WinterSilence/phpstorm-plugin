@@ -1,4 +1,4 @@
-# Demo-plugin
+# Template Plugin Name
 
 [![Twitter Follow](https://img.shields.io/badge/follow-%40JBPlatform-1DA1F2?logo=twitter)](https://twitter.com/JBPlatform)
 [![Developers Forum](https://img.shields.io/badge/JetBrains%20Platform-Join-blue)][jb:forum]
@@ -29,6 +29,7 @@ A generated project contains the following content structure:
 │           └── messages/   Message bundles
 ├── .gitignore              Git ignoring rules
 ├── build.gradle.kts        Gradle build configuration
+├── customize               Interactive setup for project and plugin identifiers
 ├── gradle.properties       Gradle configuration properties
 ├── gradlew                 *nix Gradle Wrapper script
 ├── gradlew.bat             Windows Gradle Wrapper script
@@ -44,6 +45,26 @@ In addition to the configuration files, the most crucial part is the `src` direc
 The plugin logo is placed in `src/main/resources/META-INF/pluginIcon.svg`.
 See [Plugin Logo][docs:logo] for more information and logo requirements.
 
+## Customize the template
+
+The project starts with placeholder identifiers such as `template-project-name` and `template.plugin.id`. From the project root, run:
+
+```bash
+./customize
+```
+
+The script asks for each value. Every prompt includes a short explanation, an example, and the current value in brackets. Press Enter to keep the current value. It updates:
+
+- `rootProject.name` in `settings.gradle.kts`
+- `group` and `version` in `gradle.properties`
+- the plugin id, name, vendor, vendor URL, and description in `plugin.xml`
+- the Kotlin package in `src/main/kotlin` and the tool window `factoryClass`
+- the titles in this file and in `CHANGELOG.md`
+
+Without a terminal, pass every option: `--project-name`, `--group`, `--version`, `--id`, `--name`, `--vendor`, `--vendor-url`, `--description`, and `--package`. Run `./customize --help` to list them.
+
+Cursor may run `./customize` without an extra approval. That allowlist is in `.cursor/cli.json` and `.cursor/permissions.json`.
+
 ## Build script
 
 The [build.gradle.kts][file:build.gradle.kts] is the core of the project definition.
@@ -58,7 +79,7 @@ It applies three Gradle plugins:
 The `intellijPlatform` dependencies block selects the IDE to compile against:
 
 ```kotlin
-local("/opt/devel/PhpStorm")
+phpstorm("2026.3")
 ```
 
 See [Target Versions][docs:target-version] for more information.
@@ -106,7 +127,7 @@ Within the default project structure, there is a `.run` directory provided conta
 > [!TIP]
 > Make sure to follow all guidelines listed in [Publishing a Plugin][docs:publishing] to follow all recommended and required steps.
 
-Use [IntelliJ Plugin Verifier](https://github.com/JetBrains/intellij-plugin-verifier) to checks the binary compatibility between IntelliJ-based IDE builds and IntelliJ Platform plugins.
+Use [IntelliJ Plugin Verifier][docs:intellij-plugin-verifier] to checks the binary compatibility between IntelliJ-based IDE builds and IntelliJ Platform plugins.
 
 Releasing a plugin to [JetBrains Marketplace](https://plugins.jetbrains.com) is a straightforward operation that uses the `publishPlugin` Gradle task provided by the [intellij-platform-gradle-plugin][docs:intellij-platform-gradle-plugin-docs].
 
@@ -128,6 +149,7 @@ You can also upload the plugin to the [JetBrains Plugin Repository](https://plug
 [docs:intellij-platform-gradle-plugin-docs]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html?from=IJPluginReadmeFile
 [docs:intellij-platform-gradle-plugin-runIde]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html?from=IJPluginReadmeFile#runIde
 [docs:intellij-platform-gradle-plugin-verifyPlugin]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html?from=IJPluginReadmeFile#verifyPlugin
+[docs:intellij-plugin-verifier]: https://github.com/JetBrains/intellij-plugin-verifier
 [docs:logo]: https://plugins.jetbrains.com/docs/intellij/plugin-icon-file.html?from=IJPluginReadmeFile
 [docs:target-version]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#target-versions
 [docs:testing]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html?from=IJPluginReadmeFile#testing

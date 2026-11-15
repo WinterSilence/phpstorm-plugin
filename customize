@@ -1,0 +1,298 @@
+#!/usr/bin/env bash
+# Initial plugin customization. Replaces the template markers in Gradle files, plugin.xml, Kotlin packages, CHANGELOG.md, and README.md.
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+unset PROJECT_NAME GROUP VERSION PLUGIN_ID PLUGIN_NAME VENDOR VENDOR_URL DESCRIPTION PACKAGE
+
+PLUGIN_XML="src/main/resources/META-INF/plugin.xml"
+DOTTED='^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$'
+
+usage() {
+    cat <<'EOF'
+Usage: ./customize [options]
+
+Asks for each plugin setting on a terminal. Press Enter to keep the current
+value. Without a terminal, pass every option.
+
+Options:
+  --project-name VALUE   Gradle rootProject.name
+  --group VALUE          Gradle group
+  --version VALUE        Gradle version
+  --id VALUE             Plugin id
+  --name VALUE           Plugin display name
+  --vendor VALUE         Vendor name
+  --vendor-url VALUE     Vendor URL
+  --description VALUE    Plugin description
+  --package VALUE        Kotlin package
+  -h, --help             Show this help
+EOF
+}
+
+read_xml() {
+    local kind="$1"
+    local line value
+    case "$kind" in
+        id)
+            line=$(grep -m1 -E '<id>.*</id>' "$PLUGIN_XML" || true)
+            value=${line#*<id>}
+            value=${value%</id>*}
+            ;;
+        name)
+            line=$(grep -m1 -E '<name>.*</name>' "$PLUGIN_XML" || true)
+            value=${line#*<name>}
+            value=${value%</name>*}
+            ;;
+        vendor)
+            line=$(grep -m1 -E '<vendor[[:space:]>].*</vendor>' "$PLUGIN_XML" || true)
+            value=${line#*>}
+            value=${value%</vendor>*}
+            ;;
+        vendor-url)
+            line=$(grep -m1 -E '<vendor[[:space:]].*url="' "$PLUGIN_XML" || true)
+            value=${line#*url=\"}
+            value=${value%%\"*}
+            ;;
+        description)
+            line=$(grep -m1 -F '<![CDATA[' "$PLUGIN_XML" || true)
+            value=${line#*<![CDATA[}
+            value=${value%%]]>*}
+            ;;
+        package)
+            line=$(grep -m1 -E 'factoryClass="[^"]*MyToolWindowFactory"' "$PLUGIN_XML" || true)
+            value=${line#*factoryClass=\"}
+            value=${value%.MyToolWindowFactory\"*}
+            ;;
+        *)
+            echo "unknown field $kind" >&2
+            exit 1
+            ;;
+    esac
+    if [[ -z "$line" ]]; then
+        echo "cannot read $kind from $PLUGIN_XML" >&2
+        exit 1
+    fi
+    printf '%s' "$value"
+}
+
+read_prop() {
+    local key="$1"
+    local line
+    line=$(grep -E "^${key} = " gradle.properties)
+    printf '%s' "${line#${key} = }"
+}
+
+read_project_name() {
+    local line
+    line=$(grep -E '^rootProject\.name = ' settings.gradle.kts)
+    line=${line#rootProject.name = \"}
+    printf '%s' "${line%\"}"
+}
+
+read_package() {
+    local packages
+    packages=$(grep -hE '^package ' src/main/kotlin/*.kt | sed 's/^package //' | sort -u)
+    if [[ -z "$packages" || $(printf '%s\n' "$packages" | wc -l) -ne 1 ]]; then
+        echo "expected one package declaration in src/main/kotlin" >&2
+        exit 1
+    fi
+    printf '%s' "$packages"
+}
+
+ask() {
+    local var_name="$1"
+    local title="$2"
+    local help="$3"
+    local example="$4"
+    local current="$5"
+    if [[ -n "${!var_name+x}" ]]; then
+        return
+    fi
+    if [[ ! -t 0 ]]; then
+        echo "stdin is not a terminal; pass every option." >&2
+        usage >&2
+        exit 1
+    fi
+    printf '%s\n%s\nExample: %s\n[%s]: ' "$title" "$help" "$example" "$current"
+    local answer
+    IFS= read -r answer || true
+    if [[ -z "$answer" ]]; then
+        printf -v "$var_name" '%s' "$current"
+    else
+        printf -v "$var_name" '%s' "$answer"
+    fi
+}
+
+require_nonempty() {
+    local label="$1"
+    local value="$2"
+    if [[ -z "$value" ]]; then
+        echo "$label must not be empty" >&2
+        exit 1
+    fi
+    if [[ "$value" == *$'\n'* ]]; then
+        echo "$label must be a single line" >&2
+        exit 1
+    fi
+}
+
+require_dotted() {
+    local label="$1"
+    local value="$2"
+    if [[ ! "$value" =~ $DOTTED ]]; then
+        echo "$label must be a dotted identifier, for example com.example.demo" >&2
+        exit 1
+    fi
+}
+
+xml_text() {
+    local value="$1"
+    value=${value//&/&amp;}
+    value=${value//</&lt;}
+    value=${value//>/&gt;}
+    printf '%s' "$value"
+}
+
+xml_attr() {
+    local value
+    value=$(xml_text "$1")
+    value=${value//\"/&quot;}
+    printf '%s' "$value"
+}
+
+kotlin_string() {
+    local value="$1"
+    value=${value//\\/\\\\}
+    value=${value//\"/\\\"}
+    value=${value//\$/\\\$}
+    printf '%s' "$value"
+}
+
+replace_exact() {
+    local file="$1"
+    local old="$2"
+    local new="$3"
+    local text rest out
+    if [[ -z "$old" ]]; then
+        echo "value not found in $file: $old" >&2
+        exit 1
+    fi
+    IFS= read -r -d '' text < "$file" || true
+    if [[ "$text" != *"$old"* ]]; then
+        echo "value not found in $file: $old" >&2
+        exit 1
+    fi
+    if [[ "$old" == "$new" ]]; then
+        return
+    fi
+    out=""
+    rest=$text
+    while [[ "$rest" == *"$old"* ]]; do
+        out+=${rest%%"$old"*}
+        out+=$new
+        rest=${rest#*"$old"}
+    done
+    out+=$rest
+    printf '%s' "$out" > "$file"
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --project-name) PROJECT_NAME="$2"; shift 2 ;;
+        --group) GROUP="$2"; shift 2 ;;
+        --version) VERSION="$2"; shift 2 ;;
+        --id) PLUGIN_ID="$2"; shift 2 ;;
+        --name) PLUGIN_NAME="$2"; shift 2 ;;
+        --vendor) VENDOR="$2"; shift 2 ;;
+        --vendor-url) VENDOR_URL="$2"; shift 2 ;;
+        --description) DESCRIPTION="$2"; shift 2 ;;
+        --package) PACKAGE="$2"; shift 2 ;;
+        -h|--help) usage; exit 0 ;;
+        *)
+            echo "unknown option: $1" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
+CURRENT_PROJECT_NAME=$(read_project_name)
+CURRENT_GROUP=$(read_prop group)
+CURRENT_VERSION=$(read_prop version)
+CURRENT_ID=$(read_xml id)
+CURRENT_NAME=$(read_xml name)
+CURRENT_VENDOR=$(read_xml vendor)
+CURRENT_VENDOR_URL=$(read_xml vendor-url)
+CURRENT_DESCRIPTION=$(read_xml description)
+CURRENT_PACKAGE=$(read_package)
+
+ask PROJECT_NAME "Gradle project name" \
+    "Gradle project name (rootProject.name). It is shown in the build directory and in the IDE." \
+    "my-php-plugin" "$CURRENT_PROJECT_NAME"
+ask GROUP "Gradle group" \
+    "Maven/Gradle group of the published artifact. Usually a reverse domain." \
+    "com.example" "$CURRENT_GROUP"
+ask VERSION "Version" \
+    "Plugin version in gradle.properties." \
+    "1.0.0" "$CURRENT_VERSION"
+ask PLUGIN_ID "Plugin id" \
+    "Permanent plugin identifier, an FQN. It cannot be changed after publication." \
+    "com.example.demo" "$CURRENT_ID"
+ask PLUGIN_NAME "Plugin name" \
+    "Display name on the plugin page. Write it in Title Case." \
+    "Demo Plugin" "$CURRENT_NAME"
+ask VENDOR "Vendor" \
+    "Author or organization name on the plugin page." \
+    "Example Inc" "$CURRENT_VENDOR"
+ask VENDOR_URL "Vendor URL" \
+    "Vendor website. Shown as a link next to the name." \
+    "https://example.com" "$CURRENT_VENDOR_URL"
+ask DESCRIPTION "Description" \
+    "Short plugin description. HTML is allowed, except the sequence ]]>." \
+    "Shows a random number in a tool window" "$CURRENT_DESCRIPTION"
+ask PACKAGE "Kotlin package" \
+    "Source package in src/main/kotlin and the factoryClass prefix in plugin.xml." \
+    "com.example.demo" "$CURRENT_PACKAGE"
+
+require_nonempty "project name" "$PROJECT_NAME"
+require_nonempty "group" "$GROUP"
+require_nonempty "version" "$VERSION"
+require_nonempty "plugin id" "$PLUGIN_ID"
+require_nonempty "plugin name" "$PLUGIN_NAME"
+require_nonempty "vendor" "$VENDOR"
+require_nonempty "vendor URL" "$VENDOR_URL"
+require_nonempty "description" "$DESCRIPTION"
+require_nonempty "package" "$PACKAGE"
+require_dotted "plugin id" "$PLUGIN_ID"
+require_dotted "package" "$PACKAGE"
+
+if [[ "$DESCRIPTION" == *']]>'* ]]; then
+    echo "description must not contain ]]>" >&2
+    exit 1
+fi
+
+replace_exact settings.gradle.kts \
+    "rootProject.name = \"$(kotlin_string "$CURRENT_PROJECT_NAME")\"" \
+    "rootProject.name = \"$(kotlin_string "$PROJECT_NAME")\""
+replace_exact gradle.properties "group = $CURRENT_GROUP" "group = $GROUP"
+replace_exact gradle.properties "version = $CURRENT_VERSION" "version = $VERSION"
+replace_exact "$PLUGIN_XML" "<id>$(xml_text "$CURRENT_ID")</id>" "<id>$(xml_text "$PLUGIN_ID")</id>"
+replace_exact "$PLUGIN_XML" "<name>$(xml_text "$CURRENT_NAME")</name>" "<name>$(xml_text "$PLUGIN_NAME")</name>"
+replace_exact "$PLUGIN_XML" \
+    "<vendor url=\"$(xml_attr "$CURRENT_VENDOR_URL")\">$(xml_text "$CURRENT_VENDOR")</vendor>" \
+    "<vendor url=\"$(xml_attr "$VENDOR_URL")\">$(xml_text "$VENDOR")</vendor>"
+replace_exact "$PLUGIN_XML" \
+    "<![CDATA[$CURRENT_DESCRIPTION]]>" \
+    "<![CDATA[$DESCRIPTION]]>"
+replace_exact "$PLUGIN_XML" \
+    "factoryClass=\"${CURRENT_PACKAGE}." \
+    "factoryClass=\"${PACKAGE}."
+replace_exact CHANGELOG.md "# $CURRENT_NAME Changelog" "# $PLUGIN_NAME Changelog"
+replace_exact README.md "# $CURRENT_NAME" "# $PLUGIN_NAME"
+
+for source in src/main/kotlin/*.kt; do
+    replace_exact "$source" "package $CURRENT_PACKAGE" "package $PACKAGE"
+done
+
+echo "Updated plugin settings."

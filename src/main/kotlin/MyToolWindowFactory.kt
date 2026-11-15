@@ -1,4 +1,4 @@
-package antonf.plugins
+package template.kotlin.package
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow

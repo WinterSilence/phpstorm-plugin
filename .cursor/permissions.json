@@ -3,11 +3,16 @@
     "./gradlew",
     "gradlew",
     "bash:./gradlew*",
-    "sh:./gradlew*"
+    "sh:./gradlew*",
+    "./customize",
+    "customize",
+    "bash:./customize*",
+    "sh:./customize*"
   ],
   "autoRun": {
     "allow_instructions": [
-      "Running this repository's Gradle wrapper, as ./gradlew, gradlew, bash ./gradlew, or sh ./gradlew, does not need approval."
+      "Running this repository's Gradle wrapper, as ./gradlew, gradlew, bash ./gradlew, or sh ./gradlew, does not need approval.",
+      "Running this repository's customize script, as ./customize, customize, bash ./customize, or sh ./customize, does not need approval."
     ]
   }
 }

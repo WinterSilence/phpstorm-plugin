@@ -1,0 +1,15 @@
+rules_scope = "project"
+shell_allowlist_extra = [
+  "./gradlew",
+  "gradlew",
+  "bash ./gradlew",
+  "bash ./gradlew *",
+  "sh ./gradlew",
+  "sh ./gradlew *",
+  "./customize",
+  "customize",
+  "bash ./customize",
+  "bash ./customize *",
+  "sh ./customize",
+  "sh ./customize *",
+]

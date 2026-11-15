@@ -1,5 +1,8 @@
-<!-- Keep a Changelog guide, read more: https://keepachangelog.com -->
+<!-- 
+Keep a Changelog guide.
+Read more: https://keepachangelog.com/en/1.1.0/
+-->
 
-# Demo-plugin Changelog
+# Template Plugin Name Changelog
 
-## [Unreleased]
+## 1.0.0

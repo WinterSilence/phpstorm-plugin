@@ -10,6 +10,15 @@ kotlin {
     jvmToolchain(25)
 }
 
+repositories {
+    mavenCentral()
+    // IntelliJ Platform Gradle Plugin Repositories Extension,
+    // read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     testImplementation(libs.junit)
@@ -17,13 +26,11 @@ dependencies {
     // IntelliJ Platform Gradle Plugin Dependencies Extension,
     // read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        // CDN JetBrains отвечает 451 на архив PhpStorm, поэтому сборка идёт
-        // из локальной установки PS-263.7307.215.
-        local("/opt/devel/PhpStorm")
+        phpstorm("2026.3")
         testFramework(TestFrameworkType.Platform)
-
         bundledPlugin("com.jetbrains.php")
     }
+    testImplementation(kotlin("test"))
 }
 
 intellijPlatform {

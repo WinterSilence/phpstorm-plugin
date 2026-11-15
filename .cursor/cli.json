@@ -4,7 +4,11 @@
       "Shell(./gradlew)",
       "Shell(gradlew)",
       "Shell(bash:./gradlew*)",
-      "Shell(sh:./gradlew*)"
+      "Shell(sh:./gradlew*)",
+      "Shell(./customize)",
+      "Shell(customize)",
+      "Shell(bash:./customize*)",
+      "Shell(sh:./customize*)"
     ]
   }
 }
